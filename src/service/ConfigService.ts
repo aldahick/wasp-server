@@ -3,16 +3,19 @@ dotenv.config();
 
 import { Service } from "typedi";
 
-function optional(key: string) {
+function optional<T = string>(key: string, transformer?: (value: string) => T) {
   return (target: ConfigService, fieldName: keyof ConfigService) => {
     const value = process.env[key];
-    (target as any)[fieldName] = value;
-    return !!value;
+    if (!value) {
+      return false;
+    }
+    (target as any)[fieldName] = transformer ? transformer(value) : value;
+    return true;
   };
 }
-function required(key: string) {
+function required<T = string>(key: string, transformer?: (value: string) => T) {
   return (target: ConfigService, fieldName: keyof ConfigService) => {
-    const isFound = optional(key)(target, fieldName);
+    const isFound = optional(key, transformer)(target, fieldName);
     if (!isFound) {
       console.error("Missing environment variable " + key);
       process.exit(1);
@@ -22,5 +25,6 @@ function required(key: string) {
 
 @Service()
 export class ConfigService {
-  @required("DATABASE_URL") databaseUrl!: string;
+  @required("HTTP_PORT", Number) httpPort!: number;
+  @required("MONGO_URL") mongoUrl!: string;
 }

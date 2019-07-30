@@ -11,7 +11,7 @@ export class MongoService {
   ) { }
 
   async init() {
-    this._connection = (await mongoose.connect(this.config.databaseUrl, {
+    this._connection = (await mongoose.connect(this.config.mongoUrl, {
       useNewUrlParser: true
     })).connection;
   }

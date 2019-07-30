@@ -5,12 +5,14 @@
     "tslint-sonarts"
   ],
   "rules": {
+    "array-type": false,
     "arrow-parens": [true, "ban-single-arg-parens"],
     "await-promise": [true, "Query" ],
     "cognitive-complexity": false,
     "interface-name": false,
     "max-union-size": false,
     "max-line-length": false,
+    "member-ordering": false,
     "no-console": false,
     "no-duplicate-string": [false, 5 ],
     "no-duplicate-variable": [true, "check-parameters" ],

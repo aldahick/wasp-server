@@ -1,7 +1,7 @@
 import { Model as MongooseModel } from "mongoose";
 import { Service } from "typedi";
 import { InstanceType as TypegooseInstanceType, Typegoose } from "typegoose";
-import { User } from "../model/Users";
+import { User } from "../collections/Users";
 import { MongoService } from "./MongoService";
 
 type TypegooseCollection<Model extends typeof Typegoose> = MongooseModel<TypegooseInstanceType<InstanceType<Model>>> & InstanceType<Model> & Model;
