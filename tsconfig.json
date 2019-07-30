@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "target": "es2019",
+    "module": "commonjs",
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "rootDir": "./src",
+    "outDir": "./dist",
+    "strict": true,
+    "noUnusedLocals": true,
+    "inlineSourceMap": true
+  },
+  "include": ["./src/*.ts", "./src/**/*.ts"]
+}
