@@ -1,5 +1,5 @@
 import { arrayProp, prop, Typegoose } from "typegoose";
-import { idProp } from "../../util/mongo";
+import { idProp, ModelInit } from "../../util/mongo";
 import { Permission } from "../shared/Permission";
 
 export class Role extends Typegoose {
@@ -11,4 +11,9 @@ export class Role extends Typegoose {
 
   @arrayProp({ required: true, items: String })
   permissions!: Permission[];
+
+  constructor(init?: ModelInit<Role>) {
+    super();
+    Object.assign(this, init);
+  }
 }

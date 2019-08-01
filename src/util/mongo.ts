@@ -1,4 +1,4 @@
-import { prop } from "typegoose";
+import { prop, Typegoose } from "typegoose";
 import { randomId } from "./random";
 
 export function idProp() {
@@ -6,3 +6,5 @@ export function idProp() {
     default: randomId
   });
 }
+
+export type ModelInit<Model extends Typegoose> = Omit<Model, "_id" | keyof Typegoose>;

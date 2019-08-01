@@ -1,6 +1,7 @@
 import { Model as MongooseModel } from "mongoose";
 import { Service } from "typedi";
 import { InstanceType as TypegooseInstanceType, Typegoose } from "typegoose";
+import { Role } from "../collections/Roles";
 import { User } from "../collections/Users";
 import { MongoService } from "./MongoService";
 
@@ -15,7 +16,10 @@ function collection<Model extends typeof Typegoose>(model: Model, name: string) 
 
 @Service()
 export class DatabaseService {
+
+  @collection(Role, "roles") roles!: TypegooseCollection<typeof Role>;
   @collection(User, "users") users!: TypegooseCollection<typeof User>;
+
   constructor(
     private mongo: MongoService
   ) { }

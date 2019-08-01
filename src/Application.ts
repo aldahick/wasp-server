@@ -1,9 +1,11 @@
 import { ApolloServer } from "apollo-server-express";
+import { ExpressContext } from "apollo-server-express/dist/ApolloServer";
 import * as express from "express";
 import * as http from "http";
 import * as path from "path";
 import * as requireAll from "require-all";
 import { Service } from "typedi";
+import { Context } from "./lib/Context";
 import { Resolver } from "./resolver/Resolver";
 import { ConfigService } from "./service/ConfigService";
 import { DatabaseService } from "./service/DatabaseService";
@@ -38,7 +40,8 @@ export class Application {
     const { resolvers, schema } = Resolver.getAll();
     this.apollo = new ApolloServer({
       typeDefs: schema,
-      resolvers
+      resolvers,
+      context: ({ req }: ExpressContext) => new Context(req)
     });
     this.apollo.applyMiddleware({ app: this.express });
   }

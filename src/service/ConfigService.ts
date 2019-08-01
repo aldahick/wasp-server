@@ -26,5 +26,6 @@ function required<T = string>(key: string, transformer?: (value: string) => T) {
 @Service()
 export class ConfigService {
   @required("HTTP_PORT", Number) httpPort!: number;
+  @required("JWT_KEY") jwtKey!: string;
   @required("MONGO_URL") mongoUrl!: string;
 }

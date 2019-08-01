@@ -32,17 +32,21 @@ export class Resolver {
       (resolvers[type] as any)[field] = target[key].bind(target);
     }));
 
-    const buildSchema = (nodes: (DocumentNode | undefined)[]) => {
-      const node = concatAST(_.compact(nodes));
-      return printNode(node);
-      // return nodes.filter(n => n && n.loc).map(n => n!.loc!.source.body).join("\n");
+    const buildSchema = (nodes: (DocumentNode | undefined)[], typeName?: string): string => {
+      let schema = printNode(concatAST(_.compact(nodes)));
+      if (typeName) {
+        schema = `type ${typeName} {\n${schema.replace(new RegExp(`type ${typeName} \\{([^\\}]+)\\}`, "g"), "$1")}}`;
+      }
+      return schema;
     };
 
     return {
       resolvers,
-      schema: ["types", "mutation", "query"].map(k =>
-        buildSchema(targets.map(t => (t as any)[k]))
-      ).join("\n")
+      schema: [
+        buildSchema(targets.map(t => t.types)),
+        buildSchema(targets.map(t => t.mutation), "Mutation"),
+        buildSchema(targets.map(t => t.query), "Query")
+      ].join("\n")
     };
   }
 }
