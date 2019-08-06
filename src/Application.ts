@@ -5,6 +5,7 @@ import * as http from "http";
 import * as path from "path";
 import * as requireAll from "require-all";
 import { Service } from "typedi";
+import { Controller } from "./controller/Controller";
 import { Context } from "./lib/Context";
 import { Resolver } from "./resolver/Resolver";
 import { ConfigService } from "./service/ConfigService";
@@ -30,6 +31,7 @@ export class Application {
     this.logger.info("start", "Connected to MongoDB");
     this.db.init();
     this.logger.info("start", "Initialized database collections");
+    this.setupControllers();
     this.setupApollo();
     await new Promise(resolve => this.http.listen(this.config.httpPort, resolve));
     this.logger.info("start", "HTTP server started");
@@ -44,5 +46,10 @@ export class Application {
       context: ({ req }: ExpressContext) => new Context(req)
     });
     this.apollo.applyMiddleware({ app: this.express });
+  }
+
+  private setupControllers() {
+    requireAll(path.resolve(__dirname, "./controller"));
+    Controller.setup(this.express);
   }
 }

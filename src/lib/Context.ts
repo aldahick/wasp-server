@@ -17,6 +17,8 @@ export class Context {
       if (prefix.toLowerCase() === "bearer") {
         this.token = Token.parse(token);
       }
+    } else if (req.query.token) {
+      this.token = Token.parse(req.query.token);
     }
   }
 
@@ -36,7 +38,7 @@ export class Context {
     return this.token.payload.userId;
   }
   async user(): Promise<User | undefined> {
-    if (this.user) { return this._user; }
+    if (this._user) { return this._user; }
     const userId = this.userId;
     if (!userId) { return; }
     const user = await this.db.users.findById(userId).exec();

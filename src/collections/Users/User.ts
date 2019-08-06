@@ -8,7 +8,7 @@ export class User extends Typegoose {
   @idProp()
   _id!: string;
 
-  @prop({ required: true, _id: true })
+  @prop({ required: true, _id: false })
   auth!: UserAuth;
 
   @prop({ required: true })

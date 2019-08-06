@@ -2,13 +2,12 @@ import { gql } from "apollo-server-core";
 import { GraphQLError } from "graphql";
 import { Service } from "typedi";
 import { Permission } from "../collections/shared/Permission";
+import { User } from "../collections/Users";
 import { UserProfile } from "../collections/Users/UserProfile";
 import { Context } from "../lib/Context";
+import { UserManager } from "../manager/UserManager";
 import { DatabaseService } from "../service/DatabaseService";
 import { Resolver, resolver } from "./Resolver";
-
-import { User } from "../collections/Users";
-import { UserManager } from "../manager/UserManager";
 
 interface UpdateUserProfileParams {
   id?: string;
@@ -49,8 +48,6 @@ export class UserResolver extends Resolver {
     }
   `;
 
-  // private db = Container.get(DatabaseService);
-  // private userManager = Container.get(UserManager);
   constructor(
     private db: DatabaseService,
     private userManager: UserManager
