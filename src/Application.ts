@@ -1,5 +1,6 @@
 import { ApolloServer } from "apollo-server-express";
 import { ExpressContext } from "apollo-server-express/dist/ApolloServer";
+import * as cors from "cors";
 import * as express from "express";
 import * as http from "http";
 import * as path from "path";
@@ -31,8 +32,9 @@ export class Application {
     this.logger.info("start", "Connected to MongoDB");
     this.db.init();
     this.logger.info("start", "Initialized database collections");
-    this.setupControllers();
+    this.express.use(cors({ }));
     this.setupApollo();
+    this.setupControllers();
     await new Promise(resolve => this.http.listen(this.config.httpPort, resolve));
     this.logger.info("start", "HTTP server started");
   }
