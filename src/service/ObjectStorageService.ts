@@ -23,6 +23,11 @@ export class ObjectStorageService {
     return stats.size;
   }
 
+  async isFile(key: string): Promise<boolean> {
+    const stats = await fs.stat(path.resolve(this.storageDir, key));
+    return stats.isFile();
+  }
+
   async list(dir: string) {
     if (!await this.exists(dir)) { return []; }
     const fullDir = path.resolve(this.storageDir, dir);
