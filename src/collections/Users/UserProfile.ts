@@ -6,4 +6,7 @@ export class UserProfile {
 
   @prop()
   lastName?: string;
+
+  @prop()
+  litId?: number;
 }

@@ -1,6 +1,7 @@
 import * as _ from "lodash";
 import Container from "typedi";
 import { Story, StoryCategory } from "../../collections/Stories";
+import { User } from "../../collections/Users";
 import { LitApiService } from "../../service/LitApiService";
 
 export class StoryManager {
@@ -19,19 +20,38 @@ export class StoryManager {
     })), c => c.name);
   }
 
-  async searchStories(categoryIds: [number], page: number): Promise<{
+  async searchStories(user: User, { categoryId, favorites, page }: { categoryId?: number; favorites?: boolean; page: number; }): Promise<{
     stories: Story[];
     pageCount: number;
   }> {
-    const res = await this.litApiService.fetch("GET", "/api/1/submissions", {
-      page,
-      filter: JSON.stringify([{
+    let url = "/api/1/submissions";
+    const filters: any[] = [];
+    if (categoryId) {
+      filters.push({
         property: "category_id",
-        value: categoryIds[0]
-      }])
+        value: categoryId
+      });
+    }
+    if (favorites) {
+      if (!user.profile.litId) {
+        throw new Error("no profile ID");
+      }
+      url = "/api/1/user-favorites";
+      filters.push({
+        property: "user_id",
+        value: user.profile.litId
+      }, {
+        property: "type",
+        value: "story"
+      });
+    }
+    const res = await this.litApiService.fetch("GET", url, {
+      page,
+      filter: JSON.stringify(filters)
     }, { ignoreChecks: true });
     const stories = (res.submissions as any[]).map(s => new Story({
       _id: Number(s.id),
+      categoryId: s.category_id,
       title: s.name,
       description: s.description,
       url: s.url
@@ -61,6 +81,7 @@ export class StoryManager {
     const body = res.pages.map(p => p.content).join("\n").replace(/\r/g, "");
     return new Story({
       _id: id,
+      categoryId: 0,
       title: res.pages[0].name,
       url: res.pages[0].url,
       description: "",

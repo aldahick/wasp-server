@@ -6,6 +6,9 @@ export class Story extends Typegoose {
   _id!: number;
 
   @prop({ required: true })
+  categoryId!: number;
+
+  @prop({ required: true })
   title!: string;
 
   @prop({ required: true })

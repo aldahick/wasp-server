@@ -2,6 +2,7 @@ import { ApolloError, gql } from "apollo-server-core";
 import Container, { Service } from "typedi";
 import { Permission } from "../collections/shared/Permission";
 import { StoryCategory } from "../collections/Stories";
+import { User } from "../collections/Users";
 import { Context } from "../lib/Context";
 import { StoryManager } from "../manager/StoryManager";
 import { Resolver, resolver } from "./Resolver";
@@ -11,7 +12,7 @@ export class StoryResolver extends Resolver {
   query = gql`
     type Query {
       story(id: Int!): Story!
-      stories(categoryId: Int!, page: Int): StoriesResult!
+      stories(categoryId: Int, favorites: Boolean, page: Int): StoriesResult!
       storyCategories: [StoryCategory!]!
     }
   `;
@@ -30,6 +31,7 @@ export class StoryResolver extends Resolver {
     }
     type Story {
       _id: Int!
+      categoryId: Int!
       title: String!
       description: String!
       body: String!
@@ -52,11 +54,16 @@ export class StoryResolver extends Resolver {
   }
 
   @resolver("Query.stories")
-  async stories(root: void, { categoryId, page = 0 }: { categoryId: number, page?: number }, context: Context) {
+  async stories(root: void, { categoryId, favorites, page = 0 }: { categoryId?: number, favorites?: boolean, page?: number }, context: Context) {
     if (!context.hasPermission(Permission.Stories)) {
       throw new ApolloError("not allowed");
     }
-    return this.storyManager.searchStories([categoryId], page);
+    if (!categoryId && !favorites) {
+      throw new ApolloError("no filters");
+    }
+    return this.storyManager.searchStories(await context.user() as User, {
+      categoryId, favorites, page
+    });
   }
 
   @resolver("Query.story")
