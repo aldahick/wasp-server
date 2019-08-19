@@ -1,4 +1,5 @@
 export enum Permission {
   ManageRoles = "manageRoles",
-  ManageUsers = "manageUsers"
+  ManageUsers = "manageUsers",
+  Stories = "stories"
 }

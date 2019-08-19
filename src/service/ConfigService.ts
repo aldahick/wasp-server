@@ -32,6 +32,9 @@ function required<T = string>(key: string, transformer?: (value: string) => T) {
 export class ConfigService {
   @required("HTTP_PORT", Number) httpPort!: number;
   @required("JWT_KEY") jwtKey!: string;
+  @required("LIT_API_ID") litApiId!: string;
+  @required("LIT_API_KEY") litApiKey!: string;
+  @required("LIT_API_URL") litApiUrl!: string;
   @required("MONGO_URL") mongoUrl!: string;
   @optional("STORAGE_DIR") storageDir?: string;
 }
