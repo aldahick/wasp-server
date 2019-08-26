@@ -17,6 +17,9 @@ export class Story extends Typegoose {
   @prop({ required: true })
   url!: string;
 
+  @prop({ required: true })
+  isFavorite!: boolean;
+
   @prop({ })
   body?: string;
 

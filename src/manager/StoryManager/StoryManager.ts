@@ -3,6 +3,7 @@ import Container from "typedi";
 import { Story, StoryCategory } from "../../collections/Stories";
 import { User } from "../../collections/Users";
 import { LitApiService } from "../../service/LitApiService";
+import { StorySearchResult } from "./StorySearchResult";
 
 export class StoryManager {
   private litApiService = Container.get(LitApiService);
@@ -20,31 +21,33 @@ export class StoryManager {
     })), c => c.name);
   }
 
-  async searchStories(user: User, { categoryId, favorites, page }: { categoryId?: number; favorites?: boolean; page: number; }): Promise<{
+  async getFavorites(user: User, page: number): Promise<StorySearchResult> {
+    if (!user.profile.litId) {
+      throw new Error("no profile ID");
+    }
+    return this.search("/api/1/user-favorites", page, [{
+      property: "user_id",
+      value: user.profile.litId
+    }, {
+      property: "type",
+      value: "story"
+    }]);
+  }
+
+  async getByCategory(categoryId: number, page: number) {
+    return this.search("/api/1/submissions", page, [{
+      property: "category_id",
+      value: categoryId
+    }, {
+      property: "random",
+      value: "yes"
+    }]);
+  }
+
+  private async search(url: string, page: number, filters: { property: string; value: string | number }[]): Promise<{
     stories: Story[];
     pageCount: number;
   }> {
-    let url = "/api/1/submissions";
-    const filters: any[] = [];
-    if (categoryId) {
-      filters.push({
-        property: "category_id",
-        value: categoryId
-      });
-    }
-    if (favorites) {
-      if (!user.profile.litId) {
-        throw new Error("no profile ID");
-      }
-      url = "/api/1/user-favorites";
-      filters.push({
-        property: "user_id",
-        value: user.profile.litId
-      }, {
-        property: "type",
-        value: "story"
-      });
-    }
     const res = await this.litApiService.fetch("GET", url, {
       page,
       filter: JSON.stringify(filters)
@@ -54,7 +57,8 @@ export class StoryManager {
       categoryId: s.category_id,
       title: s.name,
       description: s.description,
-      url: s.url
+      url: s.url,
+      isFavorite: false
     }));
     return {
       stories,
@@ -62,7 +66,8 @@ export class StoryManager {
     };
   }
 
-  async getStory(id: number): Promise<Story> {
+  async get(user: User | undefined, id: number): Promise<Story> {
+    const { userId, sessionId } = await this.login(user);
     const res: {
       pages: {
         id: number;
@@ -76,7 +81,9 @@ export class StoryManager {
       filter: JSON.stringify([{
         property: "submission_id",
         value: id
-      }])
+      }]),
+      user_id: userId,
+      session_id: sessionId
     }, { ignoreChecks: true });
     const body = res.pages.map(p => p.content).join("\n").replace(/\r/g, "");
     return new Story({
@@ -85,7 +92,33 @@ export class StoryManager {
       title: res.pages[0].name,
       url: res.pages[0].url,
       description: "",
-      body
+      body,
+      isFavorite: res.pages[0].is_favorited
     });
+  }
+
+  async toggleFavorite(user: User, id: number) {
+    const { userId, sessionId } = await this.login(user);
+    const { isFavorite } = await this.get(user, id);
+    const url = `/api/2/favorites/submission-${isFavorite ? "remove" : "add"}`;
+    await this.litApiService.fetch("POST", url, {
+      user_id: userId,
+      session_id: sessionId,
+      submission_id: id
+    }, { ignoreChecks: true });
+  }
+
+  async login(user?: User): Promise<{ userId?: number; sessionId?: string }> {
+    if (!user || !user.profile.litUsername || !user.profile.litPassword) {
+      return { };
+    }
+    const res = await this.litApiService.fetch("POST", "/api/2/auth/login", {
+      username: user.profile.litUsername,
+      password: user.profile.litPassword
+    });
+    return {
+      userId: Number(res.login.user.user_id),
+      sessionId: res.login.session_id
+    };
   }
 }

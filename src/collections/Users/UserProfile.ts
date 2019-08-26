@@ -9,4 +9,10 @@ export class UserProfile {
 
   @prop()
   litId?: number;
+
+  @prop()
+  litUsername?: string;
+
+  @prop()
+  litPassword?: string;
 }

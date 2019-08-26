@@ -2,7 +2,6 @@ import { ApolloError, gql } from "apollo-server-core";
 import Container, { Service } from "typedi";
 import { Permission } from "../collections/shared/Permission";
 import { StoryCategory } from "../collections/Stories";
-import { User } from "../collections/Users";
 import { Context } from "../lib/Context";
 import { StoryManager } from "../manager/StoryManager";
 import { Resolver, resolver } from "./Resolver";
@@ -12,8 +11,15 @@ export class StoryResolver extends Resolver {
   query = gql`
     type Query {
       story(id: Int!): Story!
-      stories(categoryId: Int, favorites: Boolean, page: Int): StoriesResult!
+      storiesByCategory(categoryId: Int!, page: Int): StoriesResult!
+      favoriteStories(page: Int): StoriesResult!
+      randomStories(page: Int): StoriesResult!
       storyCategories: [StoryCategory!]!
+    }
+  `;
+  mutation = gql`
+    type Mutation {
+      toggleStoryFavorite(id: Int!): Boolean!
     }
   `;
   types = gql`
@@ -35,6 +41,7 @@ export class StoryResolver extends Resolver {
       title: String!
       description: String!
       body: String!
+      isFavorite: Boolean
     }
 
     type StoriesResult {
@@ -53,17 +60,24 @@ export class StoryResolver extends Resolver {
     return this.storyManager.getCategories();
   }
 
-  @resolver("Query.stories")
-  async stories(root: void, { categoryId, favorites, page = 0 }: { categoryId?: number, favorites?: boolean, page?: number }, context: Context) {
+  @resolver("Query.storiesByCategory")
+  async storiesByCategory(root: void, { categoryId, page = 0 }: { categoryId: number, page?: number }, context: Context) {
     if (!context.hasPermission(Permission.Stories)) {
       throw new ApolloError("not allowed");
     }
-    if (!categoryId && !favorites) {
-      throw new ApolloError("no filters");
+    return this.storyManager.getByCategory(categoryId, page);
+  }
+
+  @resolver("Query.favoriteStories")
+  async favoriteStories(root: void, { page = 0 }: { page?: number }, context: Context) {
+    const user = await context.user();
+    if (!user) {
+      throw new ApolloError("requires a user token");
     }
-    return this.storyManager.searchStories(await context.user() as User, {
-      categoryId, favorites, page
-    });
+    if (!context.hasPermission(Permission.Stories)) {
+      throw new ApolloError("not allowed");
+    }
+    return this.storyManager.getFavorites(user, page);
   }
 
   @resolver("Query.story")
@@ -71,6 +85,19 @@ export class StoryResolver extends Resolver {
     if (!context.hasPermission(Permission.Stories)) {
       throw new ApolloError("not allowed");
     }
-    return this.storyManager.getStory(id);
+    return this.storyManager.get(await context.user(), id);
+  }
+
+  @resolver("Mutation.toggleStoryFavorite")
+  async toggleStoryFavorite(root: void, { id }: { id: number }, context: Context): Promise<boolean> {
+    const user = await context.user();
+    if (!user) {
+      throw new ApolloError("requires a user token");
+    }
+    if (!context.hasPermission(Permission.Stories)) {
+      throw new ApolloError("not allowed");
+    }
+    await this.storyManager.toggleFavorite(user, id);
+    return true;
   }
 }
