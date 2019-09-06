@@ -2,7 +2,7 @@ import { arrayProp, prop, Typegoose } from "typegoose";
 import { idProp, ModelInit } from "../../util/mongo";
 import { Permission } from "../shared/Permission";
 import { UserAuth } from "./auth/UserAuth";
-import { UserProfile } from "./UserProfile";
+import { UserProfile } from "./profile/UserProfile";
 
 export class User extends Typegoose {
   @idProp()

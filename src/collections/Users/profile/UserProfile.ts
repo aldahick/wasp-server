@@ -1,4 +1,5 @@
 import { prop } from "typegoose";
+import { UserLitProfile } from "./UserLitProfile";
 
 export class UserProfile {
   @prop()
@@ -7,12 +8,6 @@ export class UserProfile {
   @prop()
   lastName?: string;
 
-  @prop()
-  litId?: number;
-
-  @prop()
-  litUsername?: string;
-
-  @prop()
-  litPassword?: string;
+  @prop({ _id: false })
+  lit?: UserLitProfile;
 }

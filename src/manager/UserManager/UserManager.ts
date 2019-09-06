@@ -9,7 +9,7 @@ import { UserAuthManager } from "./UserAuthManager";
 @Service()
 export class UserManager {
   constructor(
-    readonly auth: UserAuthManager,
+    public readonly auth: UserAuthManager,
     private db: DatabaseService
   ) { }
 

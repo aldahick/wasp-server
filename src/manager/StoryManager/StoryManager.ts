@@ -1,12 +1,19 @@
 import * as _ from "lodash";
-import Container from "typedi";
+import { Service } from "typedi";
 import { Story, StoryCategory } from "../../collections/Stories";
 import { User } from "../../collections/Users";
+import { ConfigService } from "../../service/ConfigService";
+import { DatabaseService } from "../../service/DatabaseService";
 import { LitApiService } from "../../service/LitApiService";
 import { StorySearchResult } from "./StorySearchResult";
 
+@Service()
 export class StoryManager {
-  private litApiService = Container.get(LitApiService);
+  constructor(
+    private config: ConfigService,
+    private db: DatabaseService,
+    private litApiService: LitApiService
+  ) { }
 
   async getCategories(): Promise<StoryCategory[]> {
     const categories = await this.litApiService.fetch("GET", "/api/3/tagsportal/categories", {
@@ -22,12 +29,12 @@ export class StoryManager {
   }
 
   async getFavorites(user: User, page: number): Promise<StorySearchResult> {
-    if (!user.profile.litId) {
-      throw new Error("no profile ID");
+    if (!user.profile.lit) {
+      throw new Error("no profile");
     }
     return this.search("/api/1/user-favorites", page, [{
       property: "user_id",
-      value: user.profile.litId
+      value: user.profile.lit.userId
     }, {
       property: "type",
       value: "story"
@@ -67,7 +74,7 @@ export class StoryManager {
   }
 
   async get(user: User | undefined, id: number): Promise<Story> {
-    const { userId, sessionId } = await this.login(user);
+    const sessionId = await this.getSessionId(user);
     const res: {
       pages: {
         id: number;
@@ -82,10 +89,10 @@ export class StoryManager {
         property: "submission_id",
         value: id
       }]),
-      user_id: userId,
+      user_id: user ? user.profile.lit!.userId : undefined,
       session_id: sessionId
     }, { ignoreChecks: true });
-    const body = res.pages.map(p => p.content).join("\n").replace(/\r/g, "");
+    const body = res.pages.map(p => p.content).join("\n").replace(/\r/g, "").replace(/src\=\"([^\"]+)\"/g, `src="${this.config.litApiUrl}$1"`);
     return new Story({
       _id: id,
       categoryId: 0,
@@ -98,27 +105,43 @@ export class StoryManager {
   }
 
   async toggleFavorite(user: User, id: number) {
-    const { userId, sessionId } = await this.login(user);
+    if (!user.profile.lit) {
+      throw new Error("no lit profile");
+    }
+    const sessionId = await this.getSessionId(user);
     const { isFavorite } = await this.get(user, id);
     const url = `/api/2/favorites/submission-${isFavorite ? "remove" : "add"}`;
     await this.litApiService.fetch("POST", url, {
-      user_id: userId,
+      user_id: user.profile.lit.userId,
       session_id: sessionId,
       submission_id: id
     }, { ignoreChecks: true });
   }
 
-  async login(user?: User): Promise<{ userId?: number; sessionId?: string }> {
-    if (!user || !user.profile.litUsername || !user.profile.litPassword) {
-      return { };
+  async getSessionId(user?: User): Promise<string | undefined> {
+    if (!user || !user.profile.lit) {
+      return undefined;
+    }
+    const { username, password } = user.profile.lit;
+    let { sessionExpiresAt, sessionId } = user.profile.lit;
+    if (sessionId && sessionExpiresAt && sessionExpiresAt.getTime() > Date.now()) {
+      return sessionId;
     }
     const res = await this.litApiService.fetch("POST", "/api/2/auth/login", {
-      username: user.profile.litUsername,
-      password: user.profile.litPassword
+      username,
+      password
     });
-    return {
-      userId: Number(res.login.user.user_id),
-      sessionId: res.login.session_id
-    };
+    sessionId = res.login.session_id;
+    sessionExpiresAt = new Date();
+    sessionExpiresAt.setDate(sessionExpiresAt.getDate() + 1);
+    await this.db.users.updateOne({
+      _id: user._id
+    }, {
+      $set: {
+        "profile.lit.sessionId": sessionId,
+        "profile.lit.sessionExpiresAt": sessionExpiresAt
+      }
+    }).exec();
+    return sessionId;
   }
 }
