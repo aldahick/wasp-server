@@ -42,6 +42,7 @@ export class UserResolver extends Resolver {
     }
     type User {
       _id: String!
+      permissions: [Permission]!
       profile: UserProfile!
       roles: [Role]!
     }

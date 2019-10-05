@@ -23,8 +23,7 @@ export class RoleResolver extends Resolver {
   `;
   types = gql`
     enum Permission {
-      manageRoles
-      manageUsers
+      ${Object.values(Permission).join("\n")}
     }
     type Role {
       _id: String!
