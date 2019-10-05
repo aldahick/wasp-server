@@ -1,19 +1,27 @@
 import { concatAST, DocumentNode } from "graphql";
 import { print as printNode } from "graphql/language/printer";
 import * as _ from "lodash";
-import Container, { Token } from "typedi";
+import Container, { Service, Token } from "typedi";
+
+export const query = (name?: string) => defineResolver(key => `Query.${name || key}`);
+export const mutation = (name?: string) => defineResolver(key => `Mutation.${name || key}`);
 
 export function resolver(name: string) {
+  return defineResolver(() => name);
+}
+
+function defineResolver(buildName: (key: string) => string) {
   return (target: any, key: string) => {
-    Reflect.defineMetadata("resolver", { name }, target, key);
+    Reflect.defineMetadata("resolver", { name: buildName(key) }, target, key);
   };
 }
 
 export class Resolver {
   static token = new Token<Resolver>("resolver");
+  static Service = () => Service({ id: Resolver.token, multiple: true });
 
-  mutation?: DocumentNode;
-  query?: DocumentNode;
+  mutations?: DocumentNode;
+  queries?: DocumentNode;
   types?: DocumentNode;
 
   static getAll() {
@@ -44,8 +52,8 @@ export class Resolver {
       resolvers,
       schema: [
         buildSchema(targets.map(t => t.types)),
-        buildSchema(targets.map(t => t.mutation), "Mutation"),
-        buildSchema(targets.map(t => t.query), "Query")
+        buildSchema(targets.map(t => t.mutations), "Mutation"),
+        buildSchema(targets.map(t => t.queries), "Query")
       ].join("\n")
     };
   }

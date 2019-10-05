@@ -1,14 +1,13 @@
 import { ApolloError, gql } from "apollo-server-core";
-import Container, { Service } from "typedi";
 import { Permission } from "../collections/shared/Permission";
 import { StoryCategory } from "../collections/Stories";
 import { Context } from "../lib/Context";
 import { StoryManager } from "../manager/StoryManager";
-import { Resolver, resolver } from "./Resolver";
+import { mutation, query, Resolver } from "./Resolver";
 
-@Service({ id: Resolver.token, multiple: true })
+@Resolver.Service()
 export class StoryResolver extends Resolver {
-  query = gql`
+  queries = gql`
     type Query {
       story(id: Int!): Story!
       storiesByCategory(categoryId: Int!, page: Int): StoriesResult!
@@ -17,7 +16,7 @@ export class StoryResolver extends Resolver {
       storyCategories: [StoryCategory!]!
     }
   `;
-  mutation = gql`
+  mutations = gql`
     type Mutation {
       toggleStoryFavorite(id: Int!): Boolean!
     }
@@ -50,9 +49,11 @@ export class StoryResolver extends Resolver {
     }
   `;
 
-  private storyManager = Container.get(StoryManager);
+  constructor(
+    private storyManager: StoryManager
+  ) { super(); }
 
-  @resolver("Query.storyCategories")
+  @query("storyCategories")
   async categories(root: void, args: void, context: Context): Promise<StoryCategory[]> {
     if (!context.hasPermission(Permission.Stories)) {
       throw new ApolloError("not allowed");
@@ -60,7 +61,7 @@ export class StoryResolver extends Resolver {
     return this.storyManager.getCategories();
   }
 
-  @resolver("Query.storiesByCategory")
+  @query()
   async storiesByCategory(root: void, { categoryId, page = 0 }: { categoryId: number, page?: number }, context: Context) {
     if (!context.hasPermission(Permission.Stories)) {
       throw new ApolloError("not allowed");
@@ -68,7 +69,7 @@ export class StoryResolver extends Resolver {
     return this.storyManager.getByCategory(categoryId, page);
   }
 
-  @resolver("Query.favoriteStories")
+  @query()
   async favoriteStories(root: void, { page = 0 }: { page?: number }, context: Context) {
     const user = await context.user();
     if (!user) {
@@ -80,7 +81,7 @@ export class StoryResolver extends Resolver {
     return this.storyManager.getFavorites(user, page);
   }
 
-  @resolver("Query.story")
+  @query()
   async story(root: void, { id }: { id: number }, context: Context) {
     if (!context.hasPermission(Permission.Stories)) {
       throw new ApolloError("not allowed");
@@ -88,7 +89,7 @@ export class StoryResolver extends Resolver {
     return this.storyManager.get(await context.user(), id);
   }
 
-  @resolver("Mutation.toggleStoryFavorite")
+  @mutation()
   async toggleStoryFavorite(root: void, { id }: { id: number }, context: Context): Promise<boolean> {
     const user = await context.user();
     if (!user) {

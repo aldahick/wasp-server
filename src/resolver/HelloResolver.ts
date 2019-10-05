@@ -1,15 +1,15 @@
 import { gql } from "apollo-server-core";
-import { Service } from "typedi";
-import { Resolver, resolver } from "./Resolver";
+import { query, Resolver } from "./Resolver";
 
-@Service({ id: Resolver.token, multiple: true })
+@Resolver.Service()
 export class HelloResolver extends Resolver {
-  query = gql`
+  queries = gql`
     type Query {
       hello: String!
     }
   `;
-  @resolver("Query.hello")
+
+  @query()
   async hello() {
     return "Hello, world!";
   }

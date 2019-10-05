@@ -3,6 +3,17 @@ dotenv.config();
 
 import { Service } from "typedi";
 
+@Service()
+export class ConfigService {
+  @required("HTTP_PORT", Number) httpPort!: number;
+  @required("JWT_KEY") jwtKey!: string;
+  @optional("LIT_API_ID") litApiId?: string;
+  @optional("LIT_API_KEY") litApiKey?: string;
+  @optional("LIT_API_URL") litApiUrl?: string;
+  @required("MONGO_URL") mongoUrl!: string;
+  @optional("STORAGE_DIR") storageDir?: string;
+}
+
 function setValue<T>(key: string, transformer?: (value: string) => T) {
   return (target: ConfigService, fieldName: keyof ConfigService) => {
     const value = process.env[key];
@@ -26,15 +37,4 @@ function required<T = string>(key: string, transformer?: (value: string) => T) {
       process.exit(1);
     }
   };
-}
-
-@Service()
-export class ConfigService {
-  @required("HTTP_PORT", Number) httpPort!: number;
-  @required("JWT_KEY") jwtKey!: string;
-  @required("LIT_API_ID") litApiId!: string;
-  @required("LIT_API_KEY") litApiKey!: string;
-  @required("LIT_API_URL") litApiUrl!: string;
-  @required("MONGO_URL") mongoUrl!: string;
-  @optional("STORAGE_DIR") storageDir?: string;
 }

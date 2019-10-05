@@ -14,6 +14,9 @@ export class LitApiService {
   private config = Container.get(ConfigService);
 
   async fetch(method: "GET" | "POST", path: string, params: { [key: string]: string | number | undefined }, { ignoreChecks, ...options }: FetchOptions = { }) {
+    if (!this.config.litApiUrl || !this.config.litApiId || !this.config.litApiKey) {
+      throw new Error("missing lit config");
+    }
     const url = resolveUrl(this.config.litApiUrl, path) + "?" + querystring.stringify({
       apikey: this.config.litApiKey,
       appid: this.config.litApiId,

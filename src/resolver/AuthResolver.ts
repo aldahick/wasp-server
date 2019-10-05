@@ -1,16 +1,15 @@
 import { gql } from "apollo-server-core";
 import { GraphQLError } from "graphql";
-import { Service } from "typedi";
 import { UserAuthType } from "../collections/Users/auth/UserAuthType";
 import { Context } from "../lib/Context";
-import { Token, TokenType } from "../lib/Token";
+import { AuthToken, AuthTokenType } from "../lib/Token";
 import { UserManager } from "../manager/UserManager";
 import { DatabaseService } from "../service/DatabaseService";
-import { Resolver, resolver } from "./Resolver";
+import { mutation, Resolver } from "./Resolver";
 
-@Service({ id: Resolver.token, multiple: true })
+@Resolver.Service()
 export class AuthResolver extends Resolver {
-  mutation = gql`
+  mutations = gql`
     type Mutation {
       createSystemToken: String!
       createUserToken(id: String, email: String, password: String): String!
@@ -22,17 +21,17 @@ export class AuthResolver extends Resolver {
     private userManager: UserManager
   ) { super(); }
 
-  @resolver("Mutation.createSystemToken")
+  @mutation()
   async createSystemToken(root: void, args: void, context: Context): Promise<string> {
     if (!context.isSystem) {
       throw new GraphQLError("system token required");
     }
-    return new Token({
-      type: TokenType.System
+    return new AuthToken({
+      type: AuthTokenType.System
     }).sign();
   }
 
-  @resolver("Mutation.createUserToken")
+  @mutation()
   async createUserToken(root: void, { id, email, password }: { id?: string, email?: string, password?: string }, context: Context): Promise<string> {
     if (context.isUser) {
       id = context.userId;
@@ -54,8 +53,8 @@ export class AuthResolver extends Resolver {
         throw new GraphQLError("invalid email or password");
       }
     }
-    return new Token({
-      type: TokenType.User,
+    return new AuthToken({
+      type: AuthTokenType.User,
       userId: id
     }).sign();
   }

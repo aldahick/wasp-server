@@ -3,22 +3,22 @@ import Container from "typedi";
 import { Permission } from "../collections/shared/Permission";
 import { User } from "../collections/Users";
 import { DatabaseService } from "../service/DatabaseService";
-import { Token, TokenType } from "./Token";
+import { AuthToken, AuthTokenType } from "./Token";
 
 export class Context {
   private db = Container.get(DatabaseService);
 
-  private token?: Token;
+  private token?: AuthToken;
   private _user?: User;
 
   constructor(req: express.Request) {
     if (req.headers.authorization) {
       const [prefix, token] = req.headers.authorization.split(" ");
       if (prefix.toLowerCase() === "bearer") {
-        this.token = Token.parse(token);
+        this.token = AuthToken.parse(token);
       }
     } else if (req.query.token) {
-      this.token = Token.parse(req.query.token);
+      this.token = AuthToken.parse(req.query.token);
     }
   }
 
@@ -27,10 +27,10 @@ export class Context {
   }
 
   get isUser() {
-    return this.token && this.token.payload.type === TokenType.User;
+    return this.token && this.token.payload.type === AuthTokenType.User;
   }
   get isSystem() {
-    return this.token && this.token.payload.type === TokenType.System;
+    return this.token && this.token.payload.type === AuthTokenType.System;
   }
 
   get userId(): string | undefined {

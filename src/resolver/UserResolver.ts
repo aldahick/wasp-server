@@ -6,7 +6,7 @@ import { User, UserProfile } from "../collections/Users";
 import { Context } from "../lib/Context";
 import { UserManager } from "../manager/UserManager";
 import { DatabaseService } from "../service/DatabaseService";
-import { Resolver, resolver } from "./Resolver";
+import { mutation, query, Resolver, resolver } from "./Resolver";
 
 interface UpdateUserProfileParams {
   id?: string;
@@ -18,14 +18,14 @@ interface UpdateUserProfileParams {
 
 @Service({ id: Resolver.token, multiple: true })
 export class UserResolver extends Resolver {
-  mutation = gql`
+  mutations = gql`
     type Mutation {
       addRoleToUser(userId: String, roleId: String!): Boolean!
       createUser(email: String!, password: String!): User!
       updateUserProfile(id: String, profile: UserProfileInput!): User!
     }
   `;
-  query = gql`
+  queries = gql`
     type Query {
       user(id: String): User
     }
@@ -53,7 +53,7 @@ export class UserResolver extends Resolver {
     private userManager: UserManager
   ) { super(); }
 
-  @resolver("Mutation.addRoleToUser")
+  @mutation()
   async addRoleToUser(root: void, { userId, roleId }: { userId?: string, roleId: string }, context: Context): Promise<boolean> {
     if (context.isUser && !await context.hasPermission(Permission.ManageUsers)) {
       userId = context.userId;
@@ -73,12 +73,12 @@ export class UserResolver extends Resolver {
     return true;
   }
 
-  @resolver("Mutation.createUser")
+  @mutation()
   createUser(root: void, { email, password }: { email: string, password: string }) {
     return this.userManager.create(email, password);
   }
 
-  @resolver("Mutation.updateUserProfile")
+  @mutation()
   async updateUserProfile(root: void, { id, profile: { firstName, lastName } }: UpdateUserProfileParams, context: Context): Promise<User> {
     if (context.isUser && !(await context.hasPermission(Permission.ManageUsers) && id)) {
       id = context.userId;
@@ -97,7 +97,7 @@ export class UserResolver extends Resolver {
     return await this.db.users.findById(id).exec() as User;
   }
 
-  @resolver("Query.user")
+  @query()
   async user(root: void, { id }: { id?: string }, context: Context) {
     if (!id) {
       if (context.isUser) {
