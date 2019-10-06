@@ -4,9 +4,10 @@
   "scripts": {
     "start": "node dist/index",
     "start:dev": "tsc-watch --onSuccess \"npm start\"",
+    "build": "tsc",
     "test": "mocha dist/test/index",
     "test:dev": "tsc-watch --onSuccess \"npm test\"",
-    "lint": "eslint ./src/* ./src/**/*.ts",
+    "lint": "tslint -p .",
     "createToken:system": "ts-node scripts/createSystemToken.ts"
   },
   "dependencies": {
