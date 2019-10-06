@@ -1,8 +1,8 @@
-import { Token, TokenType } from "../src/lib/Token";
+import { AuthToken, AuthTokenType } from "../src/lib/Token";
 
 async function main() {
-  console.log(new Token({
-    type: TokenType.System
+  console.log(new AuthToken({
+    type: AuthTokenType.System
   }).sign());
 }
 

@@ -1,18 +1,29 @@
 import { gql } from "apollo-server-core";
 import { GraphQLError } from "graphql";
+import { User } from "../collections/Users";
 import { UserAuthType } from "../collections/Users/auth/UserAuthType";
 import { Context } from "../lib/Context";
 import { AuthToken, AuthTokenType } from "../lib/Token";
 import { UserManager } from "../manager/UserManager";
 import { DatabaseService } from "../service/DatabaseService";
-import { mutation, Resolver } from "./Resolver";
+import { mutation, Resolver, resolver } from "./Resolver";
 
 @Resolver.Service()
 export class AuthResolver extends Resolver {
   mutations = gql`
     type Mutation {
-      createSystemToken: String!
-      createUserToken(id: String, email: String, password: String): String!
+      createSystemToken: AuthToken!
+      createUserToken(id: String, email: String, password: String): AuthToken!
+    }
+  `;
+  types = gql`
+    type AuthToken {
+      token: String!
+      type: AuthTokenType
+      user: User!
+    }
+    enum AuthTokenType {
+      ${Object.values(AuthTokenType).join("\n")}
     }
   `;
 
@@ -22,17 +33,17 @@ export class AuthResolver extends Resolver {
   ) { super(); }
 
   @mutation()
-  async createSystemToken(root: void, args: void, context: Context): Promise<string> {
+  async createSystemToken(root: void, args: void, context: Context): Promise<AuthToken> {
     if (!context.isSystem) {
       throw new GraphQLError("system token required");
     }
     return new AuthToken({
       type: AuthTokenType.System
-    }).sign();
+    });
   }
 
   @mutation()
-  async createUserToken(root: void, { id, email, password }: { id?: string, email?: string, password?: string }, context: Context): Promise<string> {
+  async createUserToken(root: void, { id, email, password }: { id?: string, email?: string, password?: string }, context: Context): Promise<AuthToken> {
     if (context.isUser) {
       id = context.userId;
     } else if (context.isSystem) {
@@ -56,6 +67,24 @@ export class AuthResolver extends Resolver {
     return new AuthToken({
       type: AuthTokenType.User,
       userId: id
-    }).sign();
+    });
+  }
+
+  @resolver("AuthToken.token")
+  token(root: AuthToken): string {
+    return root.sign();
+  }
+
+  @resolver("AuthToken.type")
+  type(root: AuthToken): AuthTokenType {
+    return root.payload.type;
+  }
+
+  @resolver("AuthToken.user")
+  async user(root: AuthToken): Promise<User> {
+    if (!root.payload.userId) {
+      throw new GraphQLError("not a user token");
+    }
+    return this.db.users.findById(root.payload.userId).exec() as Promise<User>;
   }
 }
