@@ -15,5 +15,6 @@ jobs:
       - run:
           name: Deploy Docker
           command: |
+            echo "$DOCKER_PASS" | docker login --username $DOCKER_USER --password-stdin https://registry.alexhicks.net
             docker push registry.alexhicks.net/wasp/server:${CIRCLE_SHA1}
             docker push registry.alexhicks.net/wasp/server:latest
