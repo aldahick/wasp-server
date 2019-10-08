@@ -1,9 +1,11 @@
 version: 2.1
 jobs:
   build:
-    machine: true
+    docker:
+      - image: circleci/python:2.7
     steps:
       - checkout
+      - setup_remote_docker
       - run:
           label: Build Docker
           command: docker build -t wasp-server:${CIRCLE_SHA1} .
