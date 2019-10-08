@@ -6,6 +6,7 @@ jobs:
     steps:
       - checkout
       - setup_remote_docker
+          docker_layer_caching: true
       - run:
           label: Build Docker
           command: docker build -t wasp-server:${CIRCLE_SHA1} .
