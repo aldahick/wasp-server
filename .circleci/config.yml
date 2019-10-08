@@ -1,20 +1,40 @@
 version: 2.1
+
+workflows:
+  version: 2.1
+  build_and_deploy:
+    jobs:
+      - build
+      - deploy:
+          requires:
+            - build
+          filters:
+            branches:
+              only: master
+
 jobs:
   build:
     docker:
-      - image: circleci/python:2.7
+      - image: circleci/python
     steps:
       - checkout
       - setup_remote_docker:
-          docker_layer_caching: true
+          docker_layer_caching: true # this won't work without paying CircleCI extra but it's nice to dream
       - run:
           name: Build Docker
           command: |
-            docker build -t registry.alexhicks.net/wasp/server:${CIRCLE_SHA1} .
-            docker tag registry.alexhicks.net/wasp/server:${CIRCLE_SHA1} registry.alexhicks.net/wasp/server:latest
+            echo "$DOCKER_PASS" | docker login --username $DOCKER_USER --password-stdin https://registry.alexhicks.net
+            docker build -t "$DOCKER_REPO:$CIRCLE_SHA1" .
+            docker push "$DOCKER_REPO:$CIRCLE_SHA1"
+  deploy:
+    docker:
+      - image: circleci/python
+    steps:
+      - setup_remote_docker:
+          docker_layer_caching: true
       - run:
           name: Deploy Docker
           command: |
             echo "$DOCKER_PASS" | docker login --username $DOCKER_USER --password-stdin https://registry.alexhicks.net
-            docker push registry.alexhicks.net/wasp/server:${CIRCLE_SHA1}
-            docker push registry.alexhicks.net/wasp/server:latest
+            docker tag "$DOCKER_REPO:$CIRCLE_SHA1" "$DOCKER_REPO:latest"
+            docker push "$DOCKER_REPO:latest"
