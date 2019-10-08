@@ -11,6 +11,8 @@ COPY tslint.json /app/tslint.json
 
 COPY src /app/src
 
+RUN apk install python
+
 RUN npm install
 RUN npm run lint
 RUN npm run build

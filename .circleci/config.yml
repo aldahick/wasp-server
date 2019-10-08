@@ -6,8 +6,5 @@ jobs:
     steps:
       - checkout
       - run:
-          label: Install Python
-          command: apk install python
-      - run:
           label: Build Docker
           command: docker build -t wasp-server:${CIRCLE_SHA1} .
