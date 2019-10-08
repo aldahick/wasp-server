@@ -36,5 +36,6 @@ jobs:
           name: Deploy Docker
           command: |
             echo "$DOCKER_PASS" | docker login --username $DOCKER_USER --password-stdin https://registry.alexhicks.net
+            docker pull "$DOCKER_REPO:$CIRCLE_SHA1"
             docker tag "$DOCKER_REPO:$CIRCLE_SHA1" "$DOCKER_REPO:latest"
             docker push "$DOCKER_REPO:latest"
