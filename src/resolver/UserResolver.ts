@@ -28,6 +28,7 @@ export class UserResolver extends Resolver {
   queries = gql`
     type Query {
       user(id: String): User
+      users(limit: Int!, offset: Int!): [User!]!
     }
   `;
   types = gql`
@@ -42,6 +43,7 @@ export class UserResolver extends Resolver {
     }
     type User {
       _id: String!
+      email: String!
       permissions: [Permission!]!
       profile: UserProfile!
       roles: [Role]!
@@ -115,8 +117,14 @@ export class UserResolver extends Resolver {
       throw new GraphQLError("not allowed");
     }
     return this.db.users.aggregate([{
-      $limit: 
-    }])
+      $sort: {
+        email: 1
+      }
+    }, {
+      $limit: limit
+    }, {
+      $skip: offset
+    }]);
   }
 
   @resolver("UserProfile.fullName")
