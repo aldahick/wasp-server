@@ -5,10 +5,7 @@ import Container, { Service, Token } from "typedi";
 
 export const query = (name?: string) => defineResolver(key => `Query.${name || key}`);
 export const mutation = (name?: string) => defineResolver(key => `Mutation.${name || key}`);
-
-export function resolver(name: string) {
-  return defineResolver(() => name);
-}
+export const resolver = (name: string) => defineResolver(() => name);
 
 function defineResolver(buildName: (key: string) => string) {
   return (target: any, key: string) => {

@@ -109,6 +109,16 @@ export class UserResolver extends Resolver {
     return this.db.users.findById(id).exec();
   }
 
+  @query()
+  async users(root: void, { limit, offset }: { limit: number, offset: number }, context: Context): Promise<User[]> {
+    if (!await context.hasPermission(Permission.ManageUsers)) {
+      throw new GraphQLError("not allowed");
+    }
+    return this.db.users.aggregate([{
+      $limit: 
+    }])
+  }
+
   @resolver("UserProfile.fullName")
   fullName({ firstName, lastName }: UserProfile): string | undefined {
     if (!firstName && !lastName) {
