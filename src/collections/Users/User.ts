@@ -12,6 +12,9 @@ export class User extends Typegoose {
   auth!: UserAuth;
 
   @prop({ required: true })
+  createdAt!: Date;
+
+  @prop({ required: true })
   email!: string;
 
   @arrayProp({ required: true, items: String })

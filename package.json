@@ -21,6 +21,7 @@
     "express": "4.17.1",
     "fs-extra": "8.1.0",
     "graphql": "14.4.2",
+    "graphql-type-datetime": "0.2.4",
     "jsonwebtoken": "8.5.1",
     "lodash": "4.17.15",
     "mime": "2.4.4",

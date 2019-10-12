@@ -1,6 +1,7 @@
 import { gql } from "apollo-server-core";
 import { GraphQLError } from "graphql";
 import { Service } from "typedi";
+import { Role } from "../collections/Roles";
 import { Permission } from "../collections/shared/Permission";
 import { User, UserProfile } from "../collections/Users";
 import { Context } from "../lib/Context";
@@ -43,10 +44,11 @@ export class UserResolver extends Resolver {
     }
     type User {
       _id: String!
+      createdAt: Date!
       email: String!
       permissions: [Permission!]!
       profile: UserProfile!
-      roles: [Role]!
+      roles: [Role!]!
     }
   `;
 
@@ -133,5 +135,12 @@ export class UserResolver extends Resolver {
       return undefined;
     }
     return `${firstName || ""} ${lastName || ""}`.trim();
+  }
+
+  @resolver("User.roles")
+  roles(root: User): Promise<Role[]> {
+    return this.db.roles.find({
+      _id: { $in: root.roleIds }
+    }).exec();
   }
 }

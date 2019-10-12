@@ -25,6 +25,7 @@ export class UserManager {
           passwordHash: await this.auth.hash(password)
         }
       },
+      createdAt: new Date(),
       email,
       permissions: [],
       profile: { },
