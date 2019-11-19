@@ -1,0 +1,84 @@
+import { ApolloError, gql } from "apollo-server-core";
+import { Permission } from "../collections/shared/Permission";
+import { User } from "../collections/Users";
+import { Context } from "../lib/Context";
+import { StoryCategory, StoryManager } from "../manager/StoryManager";
+import { mutation, query, Resolver } from "./Resolver";
+
+@Resolver.Service()
+export class StoryResolver extends Resolver {
+  queries = gql`
+    type Query {
+      story(id: Int!): Story!
+      storiesByCategory(categoryId: Int!, page: Int): StoriesResult!
+      favoriteStories(page: Int): StoriesResult!
+      storyCategories: [StoryCategory!]!
+    }
+  `;
+  mutations = gql`
+    type Mutation {
+      toggleStoryFavorite(id: Int!): Boolean!
+    }
+  `;
+  types = gql`
+    type StoryCategory {
+      id: Int!
+      name: String!
+      description: String!
+      code: String!
+    }
+    type Story {
+      id: Int!
+      categoryId: Int!
+      title: String!
+      description: String!
+      body: String
+    }
+
+    type StoriesResult {
+      pageCount: Int!
+      stories: [Story!]!
+    }
+  `;
+
+  constructor(
+    private storyManager: StoryManager
+  ) { super(); }
+
+  @query("storyCategories")
+  async categories(root: void, args: void, context: Context): Promise<StoryCategory[]> {
+    return this.storyManager.getCategories(await this.getUser(context));
+  }
+
+  @query()
+  async storiesByCategory(root: void, { categoryId, page = 0 }: { categoryId: number, page?: number }, context: Context) {
+    return this.storyManager.getByCategory(await this.getUser(context), categoryId, page);
+  }
+
+  @query()
+  async favoriteStories(root: void, { page = 0 }: { page?: number }, context: Context) {
+    return this.storyManager.getFavorites(await this.getUser(context), page);
+  }
+
+  @query()
+  async story(root: void, { id }: { id: number }, context: Context) {
+    return this.storyManager.get(await this.getUser(context), id);
+  }
+
+  @mutation()
+  async toggleStoryFavorite(root: void, { id }: { id: number }, context: Context): Promise<boolean> {
+    await this.storyManager.toggleFavorite(await this.getUser(context), id);
+    return true;
+  }
+
+  private async getUser(context: Context): Promise<User> {
+    if (!context.hasPermission(Permission.Stories)) {
+      throw new ApolloError("not allowed");
+    }
+    const user = await context.user();
+    if (!user) {
+      throw new ApolloError("requires a user token");
+    }
+    return user;
+  }
+}
