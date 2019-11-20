@@ -1,4 +1,4 @@
-FROM node:10
+FROM node:12-alpine
 
 EXPOSE 8080
 
@@ -17,4 +17,4 @@ RUN npm run build
 
 ENV HTTP_PORT 8080
 
-CMD ["npm", "start"]
+CMD npm start
