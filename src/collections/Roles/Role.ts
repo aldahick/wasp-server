@@ -1,8 +1,8 @@
-import { arrayProp, prop, Typegoose } from "typegoose";
+import { arrayProp, prop } from "@typegoose/typegoose";
 import { idProp, ModelInit } from "../../util/mongo";
 import { Permission } from "../shared/Permission";
 
-export class Role extends Typegoose {
+export class Role {
   @idProp()
   _id!: string;
 
@@ -13,7 +13,6 @@ export class Role extends Typegoose {
   permissions!: Permission[];
 
   constructor(init?: ModelInit<Role>) {
-    super();
     Object.assign(this, init);
   }
 }

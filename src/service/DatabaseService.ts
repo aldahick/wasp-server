@@ -1,13 +1,10 @@
-import { Model as MongooseModel } from "mongoose";
+import { getModelForClass, ReturnModelType, setGlobalOptions } from "@typegoose/typegoose";
 import { Service } from "typedi";
-import { InstanceType as TypegooseInstanceType, Typegoose } from "typegoose";
 import { Role } from "../collections/Roles";
 import { User } from "../collections/Users";
 import { MongoService } from "./MongoService";
 
-type TypegooseCollection<Model extends typeof Typegoose> = MongooseModel<TypegooseInstanceType<InstanceType<Model>>> & InstanceType<Model> & Model;
-
-function collection<Model extends typeof Typegoose>(model: Model, name: string) {
+function collection<Model>(model: Model, name: string) {
   return (target: DatabaseService, key: keyof DatabaseService) => {
     Reflect.defineMetadata("collection", { name, model }, target, key);
     (target as any)[key] = true;
@@ -17,18 +14,23 @@ function collection<Model extends typeof Typegoose>(model: Model, name: string) 
 @Service()
 export class DatabaseService {
 
-  @collection(Role, "roles") roles!: TypegooseCollection<typeof Role>;
-  @collection(User, "users") users!: TypegooseCollection<typeof User>;
+  @collection(Role, "roles") roles!: ReturnModelType<typeof Role>;
+  @collection(User, "users") users!: ReturnModelType<typeof User>;
 
   constructor(
     private mongo: MongoService
   ) { }
 
   init() {
+    setGlobalOptions({
+      globalOptions: {
+        useNewEnum: true
+      }
+    });
     for (const key in this) {
       if (!Reflect.hasMetadata("collection", this, key)) { continue; }
       const metadata = Reflect.getMetadata("collection", this, key);
-      (this as any)[key] = new (metadata.model as typeof Typegoose)().setModelForClass(metadata.model, {
+      (this as any)[key] = getModelForClass(metadata.model, {
         existingConnection: this.mongo.connection,
         schemaOptions: { collection: metadata.name }
       });

@@ -1,4 +1,4 @@
-import { prop } from "typegoose";
+import { prop } from "@typegoose/typegoose";
 import { UserStoryProfile } from "./UserStoryProfile";
 
 export class UserProfile {

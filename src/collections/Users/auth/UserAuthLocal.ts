@@ -1,4 +1,4 @@
-import { prop } from "typegoose";
+import { prop } from "@typegoose/typegoose";
 
 export class UserAuthLocal {
   @prop({ required: true })

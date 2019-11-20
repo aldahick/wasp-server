@@ -1,10 +1,10 @@
-import { arrayProp, prop, Typegoose } from "typegoose";
+import { arrayProp, prop } from "@typegoose/typegoose";
 import { idProp, ModelInit } from "../../util/mongo";
 import { Permission } from "../shared/Permission";
 import { UserAuth } from "./auth/UserAuth";
 import { UserProfile } from "./profile/UserProfile";
 
-export class User extends Typegoose {
+export class User {
   @idProp()
   _id!: string;
 
@@ -27,7 +27,6 @@ export class User extends Typegoose {
   roleIds!: string[];
 
   constructor(init?: ModelInit<User>) {
-    super();
     Object.assign(this, init);
   }
 }

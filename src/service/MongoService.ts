@@ -12,7 +12,8 @@ export class MongoService {
 
   async init() {
     this._connection = (await mongoose.connect(this.config.mongoUrl, {
-      useNewUrlParser: true
+      useNewUrlParser: true,
+      useUnifiedTopology: true
     })).connection;
   }
 

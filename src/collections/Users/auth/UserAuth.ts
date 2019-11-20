@@ -1,4 +1,4 @@
-import { prop } from "typegoose";
+import { prop } from "@typegoose/typegoose";
 import { UserAuthLocal } from "./UserAuthLocal";
 import { UserAuthType } from "./UserAuthType";
 
