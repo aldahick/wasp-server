@@ -1,5 +1,6 @@
 import { getModelForClass, ReturnModelType, setGlobalOptions } from "@typegoose/typegoose";
 import { Service } from "typedi";
+import { HttpContainer } from "../collections/HttpContainers";
 import { Role } from "../collections/Roles";
 import { User } from "../collections/Users";
 import { MongoService } from "./MongoService";
@@ -14,6 +15,7 @@ function collection<Model>(model: Model, name: string) {
 @Service()
 export class DatabaseService {
 
+  @collection(HttpContainer, "httpContainers") httpContainers!: ReturnModelType<typeof HttpContainer>;
   @collection(Role, "roles") roles!: ReturnModelType<typeof Role>;
   @collection(User, "users") users!: ReturnModelType<typeof User>;
 
