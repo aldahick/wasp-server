@@ -29,7 +29,7 @@ export class StoryResolver extends Resolver {
     }
     type Story {
       id: Int!
-      categoryId: Int!
+      categoryId: Int
       title: String!
       description: String!
       body: String
