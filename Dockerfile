@@ -1,4 +1,4 @@
-FROM node:12
+FROM node:12.13.1-alpine
 
 EXPOSE 8080
 
