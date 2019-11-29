@@ -11,6 +11,9 @@ COPY tslint.json /app/tslint.json
 
 COPY src /app/src
 
+# need this to build native modules like bcrypt
+RUN apk add python make g++
+
 RUN npm install
 RUN npm run lint
 RUN npm run build
