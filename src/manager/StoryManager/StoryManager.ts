@@ -6,7 +6,7 @@ import { resolve as resolveUrl } from "url";
 import { User, UserStoryProfile } from "../../collections/Users";
 import { ConfigService } from "../../service/ConfigService";
 import { DatabaseService } from "../../service/DatabaseService";
-import { SingleStory } from "./Story";
+import { SearchedStory, SingleStory } from "./Story";
 import { StoryCategory } from "./StoryCategory";
 import { StorySearchResult } from "./StorySearchResult";
 
@@ -42,6 +42,11 @@ export class StoryManager {
 
   async get(user: User, id: number): Promise<SingleStory> {
     return this.fetch<SingleStory>(user, "GET", `/v1/stories/${id}`);
+  }
+
+  async getSeries(user: User, id: number): Promise<SearchedStory[]> {
+    const { stories } = await this.fetch<StorySearchResult>(user, "GET", `/v1/series/${id}`);
+    return stories;
   }
 
   async toggleFavorite(user: User, id: number): Promise<void> {

@@ -2,14 +2,15 @@ import { ApolloError, gql } from "apollo-server-core";
 import { Permission } from "../collections/shared/Permission";
 import { User, UserStoryProfile } from "../collections/Users";
 import { Context } from "../lib/Context";
-import { StoryCategory, StoryManager } from "../manager/StoryManager";
-import { mutation, query, Resolver } from "./Resolver";
+import { Story, StoryCategory, StoryManager } from "../manager/StoryManager";
+import { mutation, query, Resolver, resolver } from "./Resolver";
 
 @Resolver.Service()
 export class StoryResolver extends Resolver {
   queries = gql`
     type Query {
       story(id: Int!): Story!
+      storySeries(id: Int!): [Story!]!
       storiesByCategory(categoryId: Int!, page: Int): StoriesResult!
       favoriteStories(page: Int): StoriesResult!
       storyCategories: [StoryCategory!]!
@@ -28,12 +29,17 @@ export class StoryResolver extends Resolver {
       description: String!
       code: String!
     }
+    type StorySeries {
+      id: Int!
+      stories: [Story!]!
+    }
     type Story {
       id: Int!
       categoryId: Int
       title: String!
       description: String!
       body: String
+      series: StorySeries
     }
 
     type StoriesResult {
@@ -76,6 +82,24 @@ export class StoryResolver extends Resolver {
   async createStoryProfile(root: void, profile: Pick<UserStoryProfile, "username" | "password">, context: Context): Promise<boolean> {
     await this.storyManager.createProfile(await this.getUser(context), profile);
     return true;
+  }
+
+  @query("storySeries")
+  async seriesById(root: void, { id }: { id: number }, context: Context) {
+    return this.storyManager.getSeries(await this.getUser(context), id);
+  }
+
+  @resolver("Story.series")
+  async seriesId(root: Story, args: void, context: Context) {
+    return root.seriesId && { id: root.seriesId };
+  }
+
+  @resolver("StorySeries.stories")
+  async seriesStories({ id }: { id: number }, args: void, context: Context) {
+    if (!id) {
+      return undefined;
+    }
+    return this.storyManager.getSeries(await this.getUser(context), id);
   }
 
   private async getUser(context: Context): Promise<User> {
