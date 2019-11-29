@@ -1,6 +1,6 @@
 import { ApolloError, gql } from "apollo-server-core";
 import { Permission } from "../collections/shared/Permission";
-import { User } from "../collections/Users";
+import { User, UserStoryProfile } from "../collections/Users";
 import { Context } from "../lib/Context";
 import { StoryCategory, StoryManager } from "../manager/StoryManager";
 import { mutation, query, Resolver } from "./Resolver";
@@ -17,6 +17,7 @@ export class StoryResolver extends Resolver {
   `;
   mutations = gql`
     type Mutation {
+      createStoryProfile(username: String!, password: String!): Boolean!
       toggleStoryFavorite(id: Int!): Boolean!
     }
   `;
@@ -68,6 +69,12 @@ export class StoryResolver extends Resolver {
   @mutation()
   async toggleStoryFavorite(root: void, { id }: { id: number }, context: Context): Promise<boolean> {
     await this.storyManager.toggleFavorite(await this.getUser(context), id);
+    return true;
+  }
+
+  @mutation()
+  async createStoryProfile(root: void, profile: Pick<UserStoryProfile, "username" | "password">, context: Context): Promise<boolean> {
+    await this.storyManager.createProfile(await this.getUser(context), profile);
     return true;
   }
 

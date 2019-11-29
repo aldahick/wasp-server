@@ -1,8 +1,9 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
+import * as crypto from "crypto";
 import * as _ from "lodash";
 import { Service } from "typedi";
 import { resolve as resolveUrl } from "url";
-import { User } from "../../collections/Users";
+import { User, UserStoryProfile } from "../../collections/Users";
 import { ConfigService } from "../../service/ConfigService";
 import { DatabaseService } from "../../service/DatabaseService";
 import { SingleStory } from "./Story";
@@ -15,6 +16,17 @@ export class StoryManager {
     private config: ConfigService,
     private db: DatabaseService
   ) { }
+
+  async createProfile(user: User, { username, password }: UserStoryProfile): Promise<void> {
+    await this.db.users.updateOne({
+      _id: user._id
+    }, {
+      $set: {
+        "profile.story.username": username,
+        "profile.story.password": crypto.createHash("md5").update(password).digest("hex")
+      }
+    }).exec();
+  }
 
   async getCategories(user: User): Promise<StoryCategory[]> {
     return this.fetch<StoryCategory[]>(user, "get", "/v1/categories");
