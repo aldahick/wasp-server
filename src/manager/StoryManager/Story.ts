@@ -6,7 +6,7 @@ export interface Story {
   url: string;
   isFavorite: boolean;
   body: string;
-  seriesId: number | undefined;
+  seriesId?: number;
 }
 
 export type SearchedStory = Pick<Story, "id" | "categoryId" | "title" | "description" | "url">;
