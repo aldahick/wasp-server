@@ -1,6 +1,6 @@
 import { ForbiddenError, gql } from "apollo-server-core";
 import { Context } from "../lib/Context";
-import { MediaItem, MediaManager } from "../manager/MediaManager";
+import { MediaItem, MediaItemType, MediaManager } from "../manager/MediaManager";
 import { query, Resolver } from "./Resolver";
 
 @Resolver.Service()
@@ -13,7 +13,10 @@ export class MediaResolver extends Resolver {
   types = gql`
     type MediaItem {
       key: String!
-      isFile: Boolean!
+      type: MediaItemType!
+    }
+    enum MediaItemType {
+      ${Object.values(MediaItemType)}
     }
   `;
   constructor(

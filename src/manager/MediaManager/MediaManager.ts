@@ -6,6 +6,7 @@ import { Service } from "typedi";
 import ThumbnailGenerator from "video-thumbnail-generator";
 import { ObjectStorageService } from "../../service/ObjectStorageService";
 import { MediaItem } from "./MediaItem";
+import { MediaItemType } from "./MediaItemType";
 
 @Service()
 export class MediaManager {
@@ -18,7 +19,7 @@ export class MediaManager {
     const files = await this.objectStorageService.list(fullPath);
     return Promise.all(files.sort().map(async filename => ({
       key: filename,
-      isFile: await this.objectStorageService.isFile(path.join(fullPath, filename))
+      type: await this.getType(path.join(fullPath, filename))
     })));
   }
 
@@ -43,5 +44,14 @@ export class MediaManager {
     const buffer = await fs.readFile(tempOutput);
     await fs.unlink(tempOutput);
     return buffer;
+  }
+
+  private async getType(fullKey: string): Promise<MediaItemType> {
+    if (await this.objectStorageService.isFile(fullKey)) {
+      return MediaItemType.File;
+    }
+    return (await this.objectStorageService.exists(path.join(fullKey, ".series")))
+      ? MediaItemType.Series
+      : MediaItemType.Directory;
   }
 }

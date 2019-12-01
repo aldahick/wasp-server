@@ -34,9 +34,10 @@ export class ObjectStorageService {
 
   async list(dir: string) {
     if (!await this.exists(dir)) { return []; }
-    const fullDir = path.resolve(this.storageDir, dir);
-    const files = await fs.readdir(fullDir);
-    return files.map(f => f.replace(/\\/g, "/"));
+    const files = await fs.readdir(this.getFilename(dir));
+    return files
+      .filter(f => !f.startsWith("."))
+      .map(f => f.replace(/\\/g, "/"));
   }
 
   private get storageDir() {

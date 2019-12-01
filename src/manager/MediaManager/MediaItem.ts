@@ -1,4 +1,6 @@
+import { MediaItemType } from "./MediaItemType";
+
 export interface MediaItem {
   key: string;
-  isFile: boolean;
+  type: MediaItemType;
 }
