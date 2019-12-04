@@ -7,9 +7,10 @@ import { Service } from "typedi";
 export class ConfigService {
   @required("HTTP_PORT", Number) httpPort!: number;
   @required("JWT_KEY") jwtKey!: string;
+  @optional("MEDIA_SERVICE_URL") mediaServiceUrl?: string;
   @required("MONGO_URL") mongoUrl!: string;
   @optional("STORAGE_DIR") storageDir?: string;
-  @optional("STORY_API_URL") storyApiUrl?: string;
+  @optional("STORY_SERVICE_URL") storyServiceUrl?: string;
 }
 
 function setValue<T>(key: string, transformer?: (value: string) => T) {
@@ -22,11 +23,13 @@ function setValue<T>(key: string, transformer?: (value: string) => T) {
     return true;
   };
 }
+
 function optional<T = string>(key: string, transformer?: (value: string) => T) {
   return (target: ConfigService, fieldName: keyof ConfigService) => {
     setValue(key, transformer)(target, fieldName);
   };
 }
+
 function required<T = string>(key: string, transformer?: (value: string) => T) {
   return (target: ConfigService, fieldName: keyof ConfigService) => {
     const isFound = setValue(key, transformer)(target, fieldName);

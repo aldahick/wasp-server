@@ -1,9 +1,15 @@
+import axios from "axios";
 import * as crypto from "crypto";
 import * as fs from "fs-extra";
+import { GraphQLError } from "graphql";
 import * as os from "os";
 import * as path from "path";
+import { Readable } from "stream";
 import { Service } from "typedi";
+import * as unzipper from "unzipper";
+import { resolve as resolveUrl } from "url";
 import ThumbnailGenerator from "video-thumbnail-generator";
+import { ConfigService } from "../../service/ConfigService";
 import { ObjectStorageService } from "../../service/ObjectStorageService";
 import { MediaItem } from "./MediaItem";
 import { MediaItemType } from "./MediaItemType";
@@ -11,6 +17,7 @@ import { MediaItemType } from "./MediaItemType";
 @Service()
 export class MediaManager {
   constructor(
+    private config: ConfigService,
     private objectStorageService: ObjectStorageService
   ) { }
 
@@ -33,6 +40,29 @@ export class MediaManager {
 
   async createReadStream(userId: string, key: string, { start, end }: { start: number, end?: number }) {
     return this.objectStorageService.createReadStream(path.join(userId, key), { start, end });
+  }
+
+  async scrape(url: string, userId: string, destination: string) {
+    if (!this.config.mediaServiceUrl) {
+      throw new GraphQLError("missing media service url config");
+    }
+    const { data: stream } = await axios.get<Readable>(
+      resolveUrl(this.config.mediaServiceUrl, "/v1/scrape"), {
+      params: { url },
+      responseType: "stream"
+    });
+    const handleEntry = async (entry: unzipper.Entry): Promise<string> => {
+      const key = path.join(destination, entry.path);
+      const writeStream = await this.objectStorageService.createWriteStream(path.join(userId, key));
+      return new Promise(resolve =>
+        entry.pipe(writeStream).on("finish", () => resolve(key.replace(/\\/g, "/")))
+      );
+    };
+    const promises: Promise<string>[] = [];
+    await stream.pipe(unzipper.Parse()).on("entry", (entry: unzipper.Entry) => {
+      promises.push(handleEntry(entry));
+    }).promise();
+    return Promise.all(promises);
   }
 
   async createThumbnail(userId: string, key: string): Promise<Buffer> {

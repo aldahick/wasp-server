@@ -18,6 +18,12 @@ export class ObjectStorageService {
     return fs.createReadStream(this.getFilename(key), { start, end });
   }
 
+  async createWriteStream(key: string) {
+    const filename = this.getFilename(key);
+    await fs.mkdirp(path.dirname(filename));
+    return fs.createWriteStream(filename);
+  }
+
   async exists(key: string) {
     return fs.pathExists(this.getFilename(key));
   }

@@ -54,7 +54,7 @@ export class StoryManager {
   }
 
   public async refreshToken(user: User): Promise<string> {
-    if (!this.config.storyApiUrl) {
+    if (!this.config.storyServiceUrl) {
       throw new Error("missing story API url");
     }
     if (!user.profile.story) {
@@ -65,7 +65,7 @@ export class StoryManager {
       return user.profile.story.token;
     }
     const { data: { token, expiresAt } } = await axios.post<any, AxiosResponse<{ token: string; expiresAt: string; }>>(
-      resolveUrl(this.config.storyApiUrl, "/v1/token"), {
+      resolveUrl(this.config.storyServiceUrl, "/v1/token"), {
         username: user.profile.story.username,
         password: user.profile.story.password
       });
@@ -81,10 +81,10 @@ export class StoryManager {
   }
 
   private async fetch<Result>(user: User, method: AxiosRequestConfig["method"], route: string, options: Partial<AxiosRequestConfig> = { }) {
-    if (!this.config.storyApiUrl) {
+    if (!this.config.storyServiceUrl) {
       throw new Error("missing story API url");
     }
-    const url = resolveUrl(this.config.storyApiUrl, route);
+    const url = resolveUrl(this.config.storyServiceUrl, route);
     const res = await axios({
       url, method,
       headers: {

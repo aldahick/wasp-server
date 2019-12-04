@@ -1,13 +1,18 @@
 import { ForbiddenError, gql } from "apollo-server-core";
 import { Context } from "../lib/Context";
 import { MediaItem, MediaItemType, MediaManager } from "../manager/MediaManager";
-import { query, Resolver } from "./Resolver";
+import { mutation, query, Resolver } from "./Resolver";
 
 @Resolver.Service()
 export class MediaResolver extends Resolver {
   queries = gql`
     type Query {
-      listMedia(dir: String!): [MediaItem]!
+      listMedia(dir: String!): [MediaItem!]!
+    }
+  `;
+  mutations = gql`
+    type Mutation {
+      scrapeMedia(url: String!, destination: String!): [MediaItem!]!
     }
   `;
   types = gql`
@@ -30,5 +35,16 @@ export class MediaResolver extends Resolver {
       throw new ForbiddenError("missing user");
     }
     return this.mediaManager.list(user._id, dir);
+  }
+
+  @mutation()
+  async scrapeMedia(root: void, { url, destination }: { url: string; destination: string }, context: Context): Promise<MediaItem[]> {
+    const user = await context.user();
+    if (!user) {
+      throw new ForbiddenError("missing user");
+    }
+    return (await this.mediaManager.scrape(url, user._id, destination)).map(key => ({
+      key, type: MediaItemType.File
+    }));
   }
 }
