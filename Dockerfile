@@ -10,6 +10,7 @@ COPY tsconfig.json /app/tsconfig.json
 COPY tslint.json /app/tslint.json
 
 COPY src /app/src
+COPY scripts /app/scripts
 
 # need this to build native modules like bcrypt
 RUN apk add python make g++
