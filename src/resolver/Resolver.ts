@@ -7,11 +7,10 @@ export const query = (name?: string) => defineResolver(key => `Query.${name || k
 export const mutation = (name?: string) => defineResolver(key => `Mutation.${name || key}`);
 export const resolver = (name: string) => defineResolver(() => name);
 
-function defineResolver(buildName: (key: string) => string) {
-  return (target: any, key: string) => {
+const defineResolver = (buildName: (key: string) => string) =>
+  (target: any, key: string) => {
     Reflect.defineMetadata("resolver", { name: buildName(key) }, target, key);
   };
-}
 
 export class Resolver {
   static token = new Token<Resolver>("resolver");
@@ -23,7 +22,6 @@ export class Resolver {
 
   static getAll() {
     const targets = Container.getMany(Resolver.token);
-    // tslint:disable-next-line ban-types
     const resolvers: { [type: string]: { [field: string]: Function } } = { };
 
     targets.forEach((target: any) => Object.getOwnPropertyNames(target.constructor.prototype).map(key => {

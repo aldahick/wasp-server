@@ -1,6 +1,6 @@
+import { resolve as resolveUrl } from "url";
 import axios, { AxiosRequestConfig } from "axios";
 import { Service } from "typedi";
-import { resolve as resolveUrl } from "url";
 import { WestWingEpisode } from "../../collections/WestWingEpisodes/WestWingEpisode";
 import { WestWingSeason } from "../../collections/WestWingSeasons";
 import { ConfigService } from "../../service/ConfigService";
@@ -28,7 +28,7 @@ export class WestWingManager {
       return existingEpisodes;
     }
     const { episodes: rawEpisodes } = await this.fetch<{
-      episodes: (WestWingEpisode & { id: number })[]
+      episodes: (WestWingEpisode & { id: number })[];
     }>("GET", `/v1/seasons/${seasonId}/episodes`);
     console.log(rawEpisodes);
     return this.db.westWingEpisodes.create(rawEpisodes.map(e => ({
@@ -49,7 +49,7 @@ export class WestWingManager {
 
   async getTranscript(episodeId: number): Promise<string | undefined> {
     const { transcript } = await this.fetch<{
-      transcript?: string
+      transcript?: string;
     }>("GET", `/v1/episodes/${episodeId}/transcript`);
     await this.db.westWingEpisodes.updateOne({
       _id: episodeId

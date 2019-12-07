@@ -17,7 +17,7 @@ export class MongoService {
     })).connection;
   }
 
-  public get connection() {
+  get connection() {
     if (!this._connection) {
       throw new Error("Mongo connection accessed before init()");
     }

@@ -4,9 +4,9 @@ import "source-map-support/register";
 import Container from "typedi";
 import { Application } from "./Application";
 
-async function main(): Promise<void> {
+const main = async(): Promise<void> => {
   await Container.get(Application).start();
-}
+};
 
 process.on("uncaughtException", err => {
   console.error("uncaught exception", err);

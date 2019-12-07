@@ -58,7 +58,7 @@ export class StoryResolver extends Resolver {
   }
 
   @query()
-  async storiesByCategory(root: void, { categoryId, page = 0 }: { categoryId: number, page?: number }, context: Context) {
+  async storiesByCategory(root: void, { categoryId, page = 0 }: { categoryId: number; page?: number }, context: Context) {
     return this.storyManager.getByCategory(await this.getUser(context), categoryId, page);
   }
 

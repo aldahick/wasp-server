@@ -6,12 +6,11 @@ import { WestWingEpisode } from "../collections/WestWingEpisodes";
 import { WestWingSeason } from "../collections/WestWingSeasons";
 import { MongoService } from "./MongoService";
 
-function collection<Model>(model: Model, name: string) {
-  return (target: DatabaseService, key: keyof DatabaseService) => {
+const collection = <Model>(model: Model, name: string) =>
+  (target: DatabaseService, key: keyof DatabaseService) => {
     Reflect.defineMetadata("collection", { name, model }, target, key);
     (target as any)[key] = true;
   };
-}
 
 @Service()
 export class DatabaseService {

@@ -1,8 +1,8 @@
-import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 import * as crypto from "crypto";
+import { resolve as resolveUrl } from "url";
+import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 import * as _ from "lodash";
 import { Service } from "typedi";
-import { resolve as resolveUrl } from "url";
 import { User, UserStoryProfile } from "../../collections/Users";
 import { ConfigService } from "../../service/ConfigService";
 import { DatabaseService } from "../../service/DatabaseService";
@@ -53,7 +53,7 @@ export class StoryManager {
     await this.fetch(user, "POST", `/v1/stories/${id}/favorite`);
   }
 
-  public async refreshToken(user: User): Promise<string> {
+  async refreshToken(user: User): Promise<string> {
     if (!this.config.storyServiceUrl) {
       throw new Error("missing story API url");
     }
@@ -64,7 +64,7 @@ export class StoryManager {
     if (user.profile.story.token && oldExpiresAt && oldExpiresAt?.getTime() < Date.now()) {
       return user.profile.story.token;
     }
-    const { data: { token, expiresAt } } = await axios.post<any, AxiosResponse<{ token: string; expiresAt: string; }>>(
+    const { data: { token, expiresAt } } = await axios.post<any, AxiosResponse<{ token: string; expiresAt: string }>>(
       resolveUrl(this.config.storyServiceUrl, "/v1/token"), {
         username: user.profile.story.username,
         password: user.profile.story.password

@@ -1,9 +1,9 @@
+import * as http from "http";
+import * as path from "path";
 import { ApolloServer } from "apollo-server-express";
 import { ExpressContext } from "apollo-server-express/dist/ApolloServer";
 import * as cors from "cors";
 import * as express from "express";
-import * as http from "http";
-import * as path from "path";
 import * as requireAll from "require-all";
 import { Service } from "typedi";
 import { Controller } from "./controller/Controller";
@@ -27,7 +27,7 @@ export class Application {
     private mongo: MongoService
   ) { }
 
-  public async start(): Promise<void> {
+  async start(): Promise<void> {
     await this.mongo.init();
     this.logger.info("start", "Connected to MongoDB");
     this.db.init();

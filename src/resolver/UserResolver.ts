@@ -12,8 +12,8 @@ import { mutation, query, Resolver, resolver } from "./Resolver";
 interface UpdateUserProfileParams {
   id?: string;
   profile: {
-    firstName?: string,
-    lastName?: string
+    firstName?: string;
+    lastName?: string;
   };
 }
 
@@ -58,7 +58,7 @@ export class UserResolver extends Resolver {
   ) { super(); }
 
   @mutation()
-  async addRoleToUser(root: void, { userId, roleId }: { userId?: string, roleId: string }, context: Context): Promise<boolean> {
+  async addRoleToUser(root: void, { userId, roleId }: { userId?: string; roleId: string }, context: Context): Promise<boolean> {
     if (context.isUser && !await context.hasPermission(Permission.ManageUsers)) {
       userId = context.userId;
     }
@@ -78,7 +78,7 @@ export class UserResolver extends Resolver {
   }
 
   @mutation()
-  createUser(root: void, { email, password }: { email: string, password: string }) {
+  createUser(root: void, { email, password }: { email: string; password: string }) {
     return this.userManager.create(email, password);
   }
 
@@ -114,7 +114,7 @@ export class UserResolver extends Resolver {
   }
 
   @query()
-  async users(root: void, { limit, offset }: { limit: number, offset: number }, context: Context): Promise<User[]> {
+  async users(root: void, { limit, offset }: { limit: number; offset: number }, context: Context): Promise<User[]> {
     if (!await context.hasPermission(Permission.ManageUsers)) {
       throw new GraphQLError("not allowed");
     }

@@ -42,7 +42,7 @@ export class RoleResolver extends Resolver {
   }
 
   @mutation()
-  async addPermissionsToRole(root: void, { roleId, permissions }: { roleId: string, permissions: Permission[] }, context: Context): Promise<boolean> {
+  async addPermissionsToRole(root: void, { roleId, permissions }: { roleId: string; permissions: Permission[] }, context: Context): Promise<boolean> {
     if (!await context.hasPermission(Permission.ManageRoles)) {
       throw new ForbiddenError("manage roles");
     }

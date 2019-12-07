@@ -43,14 +43,14 @@ export class AuthResolver extends Resolver {
   }
 
   @mutation()
-  async createUserToken(root: void, { id, email, password }: { id?: string, email?: string, password?: string }, context: Context): Promise<AuthToken> {
+  async createUserToken(root: void, { id, email, password }: { id?: string; email?: string; password?: string }, context: Context): Promise<AuthToken> {
     if (context.isUser) {
       id = context.userId;
     } else if (context.isSystem) {
       if (!id) {
         throw new GraphQLError("user ID required");
       }
-    } else { // not authed
+    } else { // Not authed
       if (!email || !password) {
         throw new GraphQLError("username and password are required");
       }

@@ -8,7 +8,7 @@
     "build": "tsc",
     "test": "mocha dist/test/index",
     "test:dev": "tsc-watch --onSuccess \"npm test\"",
-    "lint": "tslint -p .",
+    "lint": "eslint --ext .ts src",
     "createToken:system": "ts-node scripts/createSystemToken.ts"
   },
   "repository": {
@@ -46,6 +46,7 @@
     "video-thumbnail-generator": "1.1.3"
   },
   "devDependencies": {
+    "@aldahick/eslint-rules": "0.1.2",
     "@types/bcrypt": "3.0.0",
     "@types/chai": "4.2.5",
     "@types/cheerio": "0.22.14",
@@ -67,8 +68,6 @@
     "mocha": "6.2.2",
     "ts-node": "8.5.2",
     "tsc-watch": "4.0.0",
-    "tslint": "5.20.1",
-    "tslint-sonarts": "1.9.0",
     "typescript": "3.7.2"
   }
 }

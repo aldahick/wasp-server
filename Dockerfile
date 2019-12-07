@@ -7,7 +7,7 @@ WORKDIR /app
 COPY package.json /app/package.json
 COPY package-lock.json /app/package-lock.json
 COPY tsconfig.json /app/tsconfig.json
-COPY tslint.json /app/tslint.json
+COPY .eslintrc.json /app/.eslintrc.json
 
 COPY src /app/src
 COPY scripts /app/scripts

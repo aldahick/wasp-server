@@ -1,13 +1,13 @@
-import axios from "axios";
 import * as crypto from "crypto";
-import * as fs from "fs-extra";
-import { GraphQLError } from "graphql";
 import * as os from "os";
 import * as path from "path";
 import { Readable } from "stream";
+import { resolve as resolveUrl } from "url";
+import axios from "axios";
+import * as fs from "fs-extra";
+import { GraphQLError } from "graphql";
 import { Service } from "typedi";
 import * as unzipper from "unzipper";
-import { resolve as resolveUrl } from "url";
 import ThumbnailGenerator from "video-thumbnail-generator";
 import { ConfigService } from "../../service/ConfigService";
 import { ObjectStorageService } from "../../service/ObjectStorageService";
@@ -38,7 +38,7 @@ export class MediaManager {
     return this.objectStorageService.getSize(path.join(userId, key));
   }
 
-  async createReadStream(userId: string, key: string, { start, end }: { start: number, end?: number }) {
+  async createReadStream(userId: string, key: string, { start, end }: { start: number; end?: number }) {
     return this.objectStorageService.createReadStream(path.join(userId, key), { start, end });
   }
 
@@ -48,10 +48,10 @@ export class MediaManager {
     }
     const { data: stream } = await axios.get<Readable>(
       resolveUrl(this.config.mediaServiceUrl, "/v1/scrape"), {
-      params: { url },
-      responseType: "stream"
-    });
-    const handleEntry = async (entry: unzipper.Entry): Promise<string> => {
+        params: { url },
+        responseType: "stream"
+      });
+    const handleEntry = async(entry: unzipper.Entry): Promise<string> => {
       const key = path.join(destination, entry.path);
       const writeStream = await this.objectStorageService.createWriteStream(path.join(userId, key));
       return new Promise(resolve =>

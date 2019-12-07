@@ -3,11 +3,10 @@ import * as _ from "lodash";
 import Container, { Token } from "typedi";
 import { LoggingService } from "../service/LoggingService";
 
-export function controller(method: "GET" | "POST", url: string) {
-  return (target: any, key: string) => {
+export const controller = (method: "GET" | "POST", url: string) =>
+  (target: any, key: string) => {
     Reflect.defineMetadata("controller", { method, url }, target, key);
   };
-}
 
 export class Controller {
   static token = new Token<Controller>("controller");

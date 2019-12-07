@@ -1,6 +1,6 @@
+import * as path from "path";
 import * as fs from "fs-extra";
 import * as _ from "lodash";
-import * as path from "path";
 import { Service } from "typedi";
 import { ConfigService } from "./ConfigService";
 
@@ -14,7 +14,7 @@ export class ObjectStorageService {
     return path.resolve(this.storageDir, key);
   }
 
-  async createReadStream(key: string, { start, end }: { start: number, end?: number }) {
+  async createReadStream(key: string, { start, end }: { start: number; end?: number }) {
     return fs.createReadStream(this.getFilename(key), { start, end });
   }
 
