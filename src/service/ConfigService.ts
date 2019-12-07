@@ -7,10 +7,14 @@ import { Service } from "typedi";
 export class ConfigService {
   @required("HTTP_PORT", Number) httpPort!: number;
   @required("JWT_KEY") jwtKey!: string;
-  @optional("MEDIA_SERVICE_URL") mediaServiceUrl?: string;
   @required("MONGO_URL") mongoUrl!: string;
-  @optional("STORAGE_DIR") storageDir?: string;
+
+  // service URLs
+  @optional("MEDIA_SERVICE_URL") mediaServiceUrl?: string;
   @optional("STORY_SERVICE_URL") storyServiceUrl?: string;
+  @optional("WEST_WING_SERVICE_URL") westWingServiceUrl?: string;
+
+  @optional("STORAGE_DIR") storageDir?: string;
 }
 
 function setValue<T>(key: string, transformer?: (value: string) => T) {

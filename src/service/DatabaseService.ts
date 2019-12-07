@@ -2,6 +2,8 @@ import { getModelForClass, ReturnModelType, setGlobalOptions } from "@typegoose/
 import { Service } from "typedi";
 import { Role } from "../collections/Roles";
 import { User } from "../collections/Users";
+import { WestWingEpisode } from "../collections/WestWingEpisodes";
+import { WestWingSeason } from "../collections/WestWingSeasons";
 import { MongoService } from "./MongoService";
 
 function collection<Model>(model: Model, name: string) {
@@ -14,8 +16,17 @@ function collection<Model>(model: Model, name: string) {
 @Service()
 export class DatabaseService {
 
-  @collection(Role, "roles") roles!: ReturnModelType<typeof Role>;
-  @collection(User, "users") users!: ReturnModelType<typeof User>;
+  @collection(Role, "roles")
+  roles!: ReturnModelType<typeof Role>;
+
+  @collection(User, "users")
+  users!: ReturnModelType<typeof User>;
+
+  @collection(WestWingEpisode, "westWingEpisodes")
+  westWingEpisodes!: ReturnModelType<typeof WestWingEpisode>;
+
+  @collection(WestWingSeason, "westWingSeasons")
+  westWingSeasons!: ReturnModelType<typeof WestWingSeason>;
 
   constructor(
     private mongo: MongoService
