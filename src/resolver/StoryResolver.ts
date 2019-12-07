@@ -64,8 +64,8 @@ export class StoryResolver extends Resolver {
   }
 
   @query()
-  async storiesBySeries(root: void, { seriesId, page = 1 }: { seriesId: number, page?: number }, context: Context): Promise<StorySearchResult> {
-    // we get this as a list, paginate it for GQL consumption
+  async storiesBySeries(root: void, { seriesId, page = 1 }: { seriesId: number; page?: number }, context: Context): Promise<StorySearchResult> {
+    // We get this as a list, paginate it for GQL consumption
     const pages = _.chunk(await this.storyManager.getSeries(await this.getUser(context), seriesId), 10);
     return {
       pageCount: pages.length,
