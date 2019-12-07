@@ -1,8 +1,9 @@
 import { ApolloError, gql } from "apollo-server-core";
+import * as _ from "lodash";
 import { Permission } from "../collections/shared/Permission";
 import { User, UserStoryProfile } from "../collections/Users";
 import { Context } from "../lib/Context";
-import { Story, StoryCategory, StoryManager } from "../manager/StoryManager";
+import { Story, StoryCategory, StoryManager, StorySearchResult } from "../manager/StoryManager";
 import { mutation, query, Resolver, resolver } from "./Resolver";
 
 @Resolver.Service()
@@ -10,8 +11,8 @@ export class StoryResolver extends Resolver {
   queries = gql`
     type Query {
       story(id: Int!): Story!
-      storySeries(id: Int!): [Story!]!
       storiesByCategory(categoryId: Int!, page: Int): StoriesResult!
+      storiesBySeries(seriesId: Int!, page: Int): StoriesResult!
       favoriteStories(page: Int): StoriesResult!
       storyCategories: [StoryCategory!]!
     }
@@ -54,16 +55,26 @@ export class StoryResolver extends Resolver {
 
   @query("storyCategories")
   async categories(root: void, args: void, context: Context): Promise<StoryCategory[]> {
-    return this.storyManager.getCategories(await this.getUser(context));
+    return _.sortBy(await this.storyManager.getCategories(await this.getUser(context)), c => c.name);
   }
 
   @query()
-  async storiesByCategory(root: void, { categoryId, page = 0 }: { categoryId: number; page?: number }, context: Context) {
+  async storiesByCategory(root: void, { categoryId, page = 1 }: { categoryId: number; page?: number }, context: Context) {
     return this.storyManager.getByCategory(await this.getUser(context), categoryId, page);
   }
 
   @query()
-  async favoriteStories(root: void, { page = 0 }: { page?: number }, context: Context) {
+  async storiesBySeries(root: void, { seriesId, page = 1 }: { seriesId: number, page?: number }, context: Context): Promise<StorySearchResult> {
+    // we get this as a list, paginate it for GQL consumption
+    const pages = _.chunk(await this.storyManager.getSeries(await this.getUser(context), seriesId), 10);
+    return {
+      pageCount: pages.length,
+      stories: pages[page - 1]
+    };
+  }
+
+  @query()
+  async favoriteStories(root: void, { page = 1 }: { page?: number }, context: Context) {
     return this.storyManager.getFavorites(await this.getUser(context), page);
   }
 
@@ -74,19 +85,13 @@ export class StoryResolver extends Resolver {
 
   @mutation()
   async toggleStoryFavorite(root: void, { id }: { id: number }, context: Context): Promise<boolean> {
-    await this.storyManager.toggleFavorite(await this.getUser(context), id);
-    return true;
+    return this.storyManager.toggleFavorite(await this.getUser(context), id);
   }
 
   @mutation()
   async createStoryProfile(root: void, profile: Pick<UserStoryProfile, "username" | "password">, context: Context): Promise<boolean> {
     await this.storyManager.createProfile(await this.getUser(context), profile);
     return true;
-  }
-
-  @query("storySeries")
-  async seriesById(root: void, { id }: { id: number }, context: Context) {
-    return this.storyManager.getSeries(await this.getUser(context), id);
   }
 
   @resolver("Story.series")

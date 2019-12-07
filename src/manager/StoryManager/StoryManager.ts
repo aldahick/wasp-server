@@ -49,8 +49,9 @@ export class StoryManager {
     return stories;
   }
 
-  async toggleFavorite(user: User, id: number): Promise<void> {
-    await this.fetch(user, "POST", `/v1/stories/${id}/favorite`);
+  async toggleFavorite(user: User, id: number): Promise<boolean> {
+    const { isFavorite } = await this.fetch<{ isFavorite: boolean }>(user, "POST", `/v1/stories/${id}/favorite`);
+    return isFavorite;
   }
 
   async refreshToken(user: User): Promise<string> {
