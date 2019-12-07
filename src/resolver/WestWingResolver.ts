@@ -1,4 +1,5 @@
 import { gql } from "apollo-server-express";
+import * as _ from "lodash";
 import { WestWingEpisode } from "../collections/WestWingEpisodes";
 import { WestWingSeason } from "../collections/WestWingSeasons";
 import { WestWingManager } from "../manager/WestWingManager";
@@ -38,12 +39,12 @@ export class WestWingResolver extends Resolver {
 
   @query("westWingEpisodes")
   async episodes(root: void, { seasonId }: { seasonId: number }): Promise<WestWingEpisode[]> {
-    return this.westWingManager.getEpisodes(seasonId);
+    return _.sortBy(await this.westWingManager.getEpisodes(seasonId), e => e.number);
   }
 
   @query("westWingSeasons")
   async seasons(): Promise<WestWingSeason[]> {
-    return this.westWingManager.getSeasons();
+    return _.sortBy(await this.westWingManager.getSeasons(), s => s._id);
   }
 
   @resolver("WestWingEpisode.season")
